@@ -1,12 +1,18 @@
-import { AuthResolver } from "./auth";
-import { UserResolver } from "./users";
+import { TransactionResolver } from "./transactions";
 
 export const resolvers = {
   Query: {
-    ...UserResolver.Query,
+    ...TransactionResolver.Query,
   },
   Mutation: {
-    ...AuthResolver.Mutation,
-    ...UserResolver.Mutation,
+    ...TransactionResolver.Mutation,
+  },
+  Transaction: TransactionResolver.Transaction,
+  ExchangeDetails: TransactionResolver.ExchangeDetails,
+  User: {
+    ...TransactionResolver.User,
+  },
+  Product: {
+    ...TransactionResolver.Product,
   },
 };

@@ -1,0 +1,15 @@
+services:
+  transaction:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    container_name: transaction_subgraph
+    ports:
+      - "4004:4004"
+    networks:
+      - ekoru-network
+
+networks:
+  ekoru-network:
+    external: true

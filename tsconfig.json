@@ -12,5 +12,9 @@
     "resolveJsonModule": true,
     "types": ["node"]
   },
-  "include": ["src", "./eslint.config.js"]
+  "include": ["src", "./eslint.config.js"],
+  "tsc-alias": {
+    "resolveFullPaths": true,
+    "verbose": false
+  }
 }

@@ -12,14 +12,21 @@ const server = new ApolloServer({
       resolvers,
     },
   ]),
+  formatError: (err) => {
+    // Log the error to the console
+    console.error("GraphQL Error:", err);
+    // Return a generic error message to the client
+    return new Error("Un error inesperado ha ocurrido. Por favor, inténtalo de nuevo más tarde.");
+  },
 });
 
 await server.start();
 
 const app = express();
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: "20mb" }));
+app.use(express.urlencoded({ extended: true, limit: "20mb" }));
+
 app.use(
   "/graphql",
   expressMiddleware(server, {
@@ -32,12 +39,12 @@ app.use(
 );
 
 app.get("/", (req, res) => {
-  res.send("Product's subgraph is running");
+  res.send("Transaction's subgraph is running");
 });
 
-const PORT = 4002;
+const PORT = process.env.PORT || 4004;
 
 app.listen(PORT, () => {
   // eslint-disable-next-line no-console
-  console.log(`Product's subgraph is running on port ${PORT}`);
+  console.log(`Transaction's subgraph is running on port ${PORT}`);
 });

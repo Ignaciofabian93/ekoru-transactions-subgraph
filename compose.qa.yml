@@ -1,0 +1,19 @@
+services:
+  transaction_qa:
+    build:
+      context: .
+      dockerfile: Dockerfile.qa
+    restart: always
+    container_name: transaction_subgraph_qa
+    ports:
+      - "4104:4004"
+    env_file:
+      - .env.qa
+    environment:
+      - NODE_ENV=qa
+    networks:
+      - ekoru-network
+
+networks:
+  ekoru-network:
+    external: true
