@@ -27,18 +27,18 @@ model User {
   userCategoryId         Int?
   accountType            AccountType      @default(FREE)
   address                String           @default("")
+  birthday               String           @default("")
+  businessName           String?
   cityId                 Int              @default(40)
   countryId              Int              @default(1)
   countyId               Int              @default(268)
+  coverImage             String?
   phone                  String           @default("")
   points                 Int              @default(0)
-  regionId               Int              @default(13)
-  surnames               String?
-  birthday               String           @default("")
-  businessName           String?
   preferredContactMethod ContactMethod    @default(WHATSAPP)
   profileImage           String?
-  coverImage             String?
+  regionId               Int              @default(13)
+  surnames               String?
   receivedChats          Chat[]           @relation("ChatReceiver")
   sentChats              Chat[]           @relation("ChatSender")
   matchesReceived        Match[]          @relation("MatchReceiver")
@@ -85,29 +85,29 @@ model Product {
   offerPrice         Int              @default(0)
   stock              Int              @default(0)
   userId             String
-  images             String[]
-  productCategoryId  Int
   badges             Badge[]
   barcode            String?          @unique
   brand              String
   color              String?
   createdAt          DateTime         @default(now())
+  images             String[]
   interests          String[]
   isActive           Boolean          @default(true)
   isExchangeable     Boolean          @default(false)
+  productCategoryId  Int
   ratingCount        Int              @default(0)
   ratings            Float            @default(0)
   reviewsNumber      Int              @default(0)
-  sku                String?          
+  sku                String?
   updatedAt          DateTime
   chat               Chat[]
+  offeredExchanges   Exchange[]       @relation("ExchangeOfferedProduct")
+  requestedExchanges Exchange[]       @relation("ExchangeRequestedProduct")
   orderItem          OrderItem[]
   productCategory    ProductCategory  @relation(fields: [productCategoryId], references: [id])
   user               User             @relation(fields: [userId], references: [id])
   productComment     ProductComment[]
   productLike        ProductLike[]
-  offeredExchanges   Exchange[]       @relation("ExchangeOfferedProduct")
-  requestedExchanges Exchange[]       @relation("ExchangeRequestedProduct")
 }
 
 model Admin {
@@ -295,8 +295,8 @@ model Transaction {
   pointsCollected Int
   createdAt       DateTime        @default(now())
   userId          String
-  user            User            @relation(fields: [userId], references: [id])
   exchange        Exchange?
+  user            User            @relation(fields: [userId], references: [id])
 }
 
 model Exchange {
@@ -308,9 +308,9 @@ model Exchange {
   notes              String?
   createdAt          DateTime       @default(now())
   completedAt        DateTime?
-  transaction        Transaction    @relation(fields: [transactionId], references: [id])
   offeredProduct     Product        @relation("ExchangeOfferedProduct", fields: [offeredProductId], references: [id])
   requestedProduct   Product        @relation("ExchangeRequestedProduct", fields: [requestedProductId], references: [id])
+  transaction        Transaction    @relation(fields: [transactionId], references: [id])
 }
 
 model WaterImpactMessage {
