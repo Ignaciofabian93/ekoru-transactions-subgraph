@@ -1,38 +1,38 @@
 import { TransactionService } from "../services/transactions";
-import { type Context } from "../../types/context";
 
 export const TransactionResolver = {
   Query: {
-    transactions: (_parent: unknown, args: { userId?: string }, context: Context) =>
+    transactions: (_parent: unknown, args: { userId?: string }) =>
       TransactionService.getTransactions({ userId: args.userId }),
 
-    transaction: (_parent: unknown, args: { id: string }, context: Context) =>
+    transaction: (_parent: unknown, args: { id: string }) =>
       TransactionService.getTransaction({ id: parseInt(args.id) }),
 
-    exchanges: (_parent: unknown, args: { userId?: string }, context: Context) =>
+    exchanges: (_parent: unknown, args: { userId?: string }) =>
       TransactionService.getExchanges({ userId: args.userId }),
 
-    exchange: (_parent: unknown, args: { id: string }, context: Context) =>
-      TransactionService.getExchange({ id: parseInt(args.id) }),
+    exchange: (_parent: unknown, args: { id: string }) => TransactionService.getExchange({ id: parseInt(args.id) }),
 
-    myTransactions: (_parent: unknown, _args: unknown, context: Context) =>
-      TransactionService.getMyTransactions(context),
+    myTransactions: (_parent: unknown, _args: { userId: string }) => TransactionService.getMyTransactions(_args),
 
-    myExchanges: (_parent: unknown, _args: unknown, context: Context) => TransactionService.getMyExchanges(context),
+    myExchanges: (_parent: unknown, _args: { userId: string }) => TransactionService.getMyExchanges(_args),
   },
 
   Mutation: {
-    createExchange: (_parent: unknown, args: { input: any }, context: Context) =>
-      TransactionService.createExchange(context, args.input),
+    createExchange: (_parent: unknown, args: { userId: string; input: any }) =>
+      TransactionService.createExchange({ userId: args.userId }, args.input),
 
-    updateExchangeStatus: (_parent: unknown, args: { input: any }, context: Context) =>
-      TransactionService.updateExchangeStatus(context, {
-        exchangeId: parseInt(args.input.exchangeId),
-        status: args.input.status,
-      }),
+    updateExchangeStatus: (_parent: unknown, args: { userId: string; input: any }) =>
+      TransactionService.updateExchangeStatus(
+        { userId: args.userId },
+        {
+          exchangeId: parseInt(args.input.exchangeId),
+          status: args.input.status,
+        },
+      ),
 
-    cancelExchange: (_parent: unknown, args: { exchangeId: string }, context: Context) =>
-      TransactionService.cancelExchange(context, parseInt(args.exchangeId)),
+    cancelExchange: (_parent: unknown, args: { exchangeId: string; userId: string }) =>
+      TransactionService.cancelExchange({ userId: args.userId }, parseInt(args.exchangeId)),
   },
 
   // Field resolvers

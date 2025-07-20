@@ -71,7 +71,7 @@ export const typeDefs = gql`
   }
 
   extend type Mutation {
-    createExchange(input: CreateExchangeInput!): ExchangeDetails!
+    createExchange(userId: ID!, input: CreateExchangeInput!): ExchangeDetails!
     updateExchangeStatus(input: UpdateExchangeStatusInput!): ExchangeDetails!
     cancelExchange(exchangeId: ID!): ExchangeDetails!
   }

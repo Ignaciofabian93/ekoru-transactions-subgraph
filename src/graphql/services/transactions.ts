@@ -1,7 +1,6 @@
-import { Transaction, type CreateExchangeInput, type UpdateExchangeStatusInput } from "../../types/transaction";
-import { type Context } from "../../types/context";
-import prisma from "../../client/prisma";
+import { type CreateExchangeInput, type UpdateExchangeStatusInput } from "../../types/transaction";
 import { ErrorService } from "../../errors/errors";
+import prisma from "../../client/prisma";
 
 export const TransactionService = {
   async getTransactions({ userId }: { userId?: string }) {
@@ -131,14 +130,8 @@ export const TransactionService = {
     }
   },
 
-  async getMyTransactions(context: Context) {
+  async getMyTransactions({ userId }: { userId: string }) {
     try {
-      if (!context.token) {
-        throw new ErrorService.UnAuthorizedError("Se requiere autenticación");
-      }
-
-      const userId = await this.getUserIdFromToken(context.token);
-
       const transactions = await prisma.transaction.findMany({
         where: { userId },
         include: {
@@ -166,14 +159,8 @@ export const TransactionService = {
     }
   },
 
-  async getMyExchanges(context: Context) {
+  async getMyExchanges({ userId }: { userId: string }) {
     try {
-      if (!context.token) {
-        throw new ErrorService.UnAuthorizedError("Se requiere autenticación");
-      }
-
-      const userId = await this.getUserIdFromToken(context.token);
-
       const exchanges = await prisma.exchange.findMany({
         where: {
           OR: [{ offeredProduct: { userId } }, { requestedProduct: { userId } }],
@@ -203,15 +190,8 @@ export const TransactionService = {
     }
   },
 
-  async createExchange(context: Context, input: CreateExchangeInput) {
+  async createExchange({ userId }: { userId: string }, input: CreateExchangeInput) {
     try {
-      if (!context.token) {
-        throw new ErrorService.UnAuthorizedError("Se requiere autenticación");
-      }
-
-      const userId = await this.getUserIdFromToken(context.token);
-
-      // Verificar que el producto ofrecido pertenece al usuario
       const offeredProduct = await prisma.product.findUnique({
         where: { id: input.offeredProductId },
       });
@@ -224,7 +204,6 @@ export const TransactionService = {
         throw new ErrorService.UnAuthorizedError("Solo puedes ofrecer tus propios productos");
       }
 
-      // Verificar que el producto solicitado existe y es intercambiable
       const requestedProduct = await prisma.product.findUnique({
         where: { id: input.requestedProductId },
       });
@@ -241,18 +220,15 @@ export const TransactionService = {
         throw new ErrorService.BadRequestError("No puedes intercambiar con tu propio producto");
       }
 
-      // Crear transacción e intercambio
       return await prisma.$transaction(async (tx) => {
-        // Crear el registro de transacción
         const transaction = await tx.transaction.create({
           data: {
             kind: "EXCHANGE",
-            pointsCollected: 50, // Puntos por actividad de intercambio
+            pointsCollected: 50,
             userId,
           },
         });
 
-        // Crear el registro de intercambio
         const exchange = await tx.exchange.create({
           data: {
             transactionId: transaction.id,
@@ -283,15 +259,8 @@ export const TransactionService = {
     }
   },
 
-  async updateExchangeStatus(context: Context, input: UpdateExchangeStatusInput) {
+  async updateExchangeStatus({ userId }: { userId: string }, input: UpdateExchangeStatusInput) {
     try {
-      if (!context.token) {
-        throw new ErrorService.UnAuthorizedError("Se requiere autenticación");
-      }
-
-      const userId = await this.getUserIdFromToken(context.token);
-
-      // Obtener el intercambio para verificar permisos
       const exchange = await prisma.exchange.findUnique({
         where: { id: input.exchangeId },
         include: {
@@ -343,36 +312,13 @@ export const TransactionService = {
     }
   },
 
-  async cancelExchange(context: Context, exchangeId: number) {
-    return await this.updateExchangeStatus(context, {
-      exchangeId,
-      status: "CANCELLED",
-    });
-  },
-
-  async getUserIdFromToken(token: string): Promise<string> {
-    try {
-      // Obtener sesión del token
-      const session = await prisma.session.findUnique({
-        where: { token },
-        include: { user: true },
-      });
-
-      if (!session) {
-        throw new ErrorService.UnAuthorizedError("Token inválido o expirado");
-      }
-
-      if (session.expiresAt < new Date()) {
-        throw new ErrorService.UnAuthorizedError("El token ha expirado");
-      }
-
-      return session.userId;
-    } catch (error) {
-      console.error("Error validating token:", error);
-      if (error instanceof ErrorService.UnAuthorizedError) {
-        throw error;
-      }
-      throw new ErrorService.UnAuthorizedError("Falló la autenticación");
-    }
+  async cancelExchange({ userId }: { userId: string }, exchangeId: number) {
+    return await this.updateExchangeStatus(
+      { userId },
+      {
+        exchangeId,
+        status: "CANCELLED",
+      },
+    );
   },
 };
