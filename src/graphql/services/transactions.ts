@@ -220,32 +220,33 @@ export const TransactionService = {
         throw new ErrorService.BadRequestError("No puedes intercambiar con tu propio producto");
       }
 
-      return await prisma.$transaction(async (tx) => {
-        const transaction = await tx.transaction.create({
-          data: {
-            kind: "EXCHANGE",
-            pointsCollected: 50,
-            userId,
-          },
-        });
-
-        const exchange = await tx.exchange.create({
-          data: {
-            transactionId: transaction.id,
-            offeredProductId: input.offeredProductId,
-            requestedProductId: input.requestedProductId,
-            notes: input.notes,
-            status: "PENDING",
-          },
-          include: {
-            offeredProduct: true,
-            requestedProduct: true,
-            transaction: true,
-          },
-        });
-
-        return exchange;
+      const transaction = await prisma.transaction.create({
+        data: {
+          kind: "EXCHANGE",
+          pointsCollected: 50,
+          userId,
+        },
       });
+
+      if (!transaction) {
+        throw new ErrorService.InternalServerError("Error al crear la transacción");
+      }
+
+      const exchange = await prisma.exchange.create({
+        data: {
+          transactionId: transaction.id,
+          offeredProductId: input.offeredProductId,
+          requestedProductId: input.requestedProductId,
+          notes: input.notes,
+          status: "PENDING",
+        },
+      });
+
+      if (!exchange) {
+        throw new ErrorService.InternalServerError("Error al crear el intercambio");
+      }
+
+      return exchange;
     } catch (error) {
       console.error("Error creating exchange:", error);
       if (
